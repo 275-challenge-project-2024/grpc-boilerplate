@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package taskscheduler;
+
+message Task {
+    int32 id = 1;
+    string command = 1;   
+    int32 priority = 2;   
+}
+
+service TaskScheduler {
+    rpc SubmitTask (Task) returns (TaskStatus);
+}
+
+message TaskStatus {
+    string status = 1;    
+    int32 taskId = 2;    
+}
