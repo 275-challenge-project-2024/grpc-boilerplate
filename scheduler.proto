@@ -36,6 +36,7 @@ message TaskRequest {
     string clientId = 1;
     string taskId = 2;
     string command = 3;
+    int32 priority = 4;
 }
 
 message TaskResponse {

@@ -68,6 +68,12 @@ add_executable(my_client client.cpp
         ${SCHEDULER_PB_CPP_FILE}
         ${SCHEDULER_GRPC_PB_CPP_FILE})
 
+add_executable(my_worker worker.cpp
+        ${TASK_SCHEDULER_PB_CPP_FILE}
+        ${TASK_SCHEDULER_GRPC_PB_CPP_FILE}
+        ${SCHEDULER_PB_CPP_FILE}
+        ${SCHEDULER_GRPC_PB_CPP_FILE})
+
 add_executable(my_server server.cpp
     ${TASK_SCHEDULER_PB_CPP_FILE}
     ${TASK_SCHEDULER_GRPC_PB_CPP_FILE}
@@ -90,6 +96,16 @@ target_link_libraries(my_server
     absl::log)
 
 target_link_libraries(my_client
+        ${_REFLECTION}
+        ${_GRPC_GRPCPP}
+        ${_PROTOBUF_LIBPROTOBUF}
+        absl::base
+        absl::strings
+        absl::synchronization
+        absl::time
+        absl::log)
+
+target_link_libraries(my_worker
         ${_REFLECTION}
         ${_GRPC_GRPCPP}
         ${_PROTOBUF_LIBPROTOBUF}

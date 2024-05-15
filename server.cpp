@@ -7,6 +7,8 @@ using grpc::ServerContext;
 using grpc::Status;
 using scheduler::HeartbeatRequest;
 using scheduler::HeartbeatResponse;
+using scheduler::TaskRequest;
+using scheduler::TaskResponse;
 using scheduler::TaskScheduler;
 using scheduler::Update;
 
@@ -24,6 +26,21 @@ class TaskSchedulerServiceImpl final : public TaskScheduler::Service {
 
         // Respond that the heartbeat was received successfully
         taskResponse->set_message("Heartbeat received successfully");
+        return Status::OK;
+    }
+
+    // New RPC method to handle task submissions
+    Status SubmitTask(ServerContext* context, const TaskRequest* request, TaskResponse* response) override {
+        std::cout << "Received task submission from client ID: " << request->clientid()
+                  << ", Task ID: " << request->taskid()
+                  << ", Command: " << request->command()
+                  << ", Priority: " << request->priority()
+                  << std::endl;
+
+        // Process the task here (e.g., store it, execute it, etc.)
+
+        // Respond that the task was received successfully
+        response->set_message("Task received and is being processed");
         return Status::OK;
     }
 };
