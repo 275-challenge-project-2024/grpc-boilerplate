@@ -1,0 +1,42 @@
+// scheduler.proto
+
+syntax = "proto3";
+
+package scheduler;
+
+service TaskScheduler {
+    // Worker interactions
+    rpc SendHeartbeat(HeartbeatRequest) returns (HeartbeatResponse) {}
+
+    // Client interactions
+    rpc SubmitTask(TaskRequest) returns (TaskResponse) {}
+}
+
+// Request and Response messages
+
+message HeartbeatRequest {
+    string workerId = 1;
+    string timestamp = 2; // Assume ISO8601 format or similar
+    repeated Update taskUpdates = 3; // Array of task updates
+    int32 curr_capacity = 4;
+    int32 total_capacity = 5;
+}
+
+message HeartbeatResponse {
+    string message = 1;
+}
+
+message Update {
+    string command = 1;
+    string completionStatus = 2;
+    string taskId = 3;
+}
+
+message TaskRequest {
+    string clientId = 1;
+    string taskId = 2;
+}
+
+message TaskResponse {
+    string message = 1;
+}

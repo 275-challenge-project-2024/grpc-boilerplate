@@ -1,21 +1,22 @@
 #include <grpcpp/grpcpp.h>
-#include "task.grpc.pb.h"
+#include "scheduler.grpc.pb.h"
 
 using grpc::Server;
 using grpc::ServerBuilder;
 using grpc::ServerContext;
 using grpc::Status;
-using taskscheduler::Task;
-using taskscheduler::TaskStatus;
-using taskscheduler::TaskScheduler;
+using scheduler::HeartbeatRequest;
+using scheduler::HeartbeatResponse;
+using scheduler::TaskScheduler;
 
 class TaskSchedulerServiceImpl final : public TaskScheduler::Service {
-    Status SubmitTask(ServerContext* context, const Task* task, TaskStatus* status) override {
-        
-        std::cout << "Received task with command: " << task->command() << " and priority: " << task->priority() << std::endl;
+    Status SendHeartbeat(ServerContext* context, const HeartbeatRequest* taskRequest, HeartbeatResponse* taskResponse) override {
 
-        status->set_status("Received");
-        status->set_taskid(rand() % 1000);  // Random task ID for example purposes
+        // Use the correct accessor methods as defined in the proto file
+        std::cout << "Received task with worker ID: " << taskRequest->workerid()
+                  << " and timestamp: " << taskRequest->timestamp() << std::endl;
+
+        taskResponse->set_message("Received");
         return Status::OK;
     }
 };
@@ -25,9 +26,11 @@ void RunServer() {
     TaskSchedulerServiceImpl service;
 
     ServerBuilder builder;
+    // Add listening port and register services
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);
+    builder.RegisterService(&service);  // No need for reinterpret_cast
     std::unique_ptr<Server> server(builder.BuildAndStart());
+
     std::cout << "Server listening on " << server_address << std::endl;
     server->Wait();
 }

@@ -2,34 +2,34 @@
 #include <memory>
 #include <string>
 #include <grpcpp/grpcpp.h>
-#include "task.grpc.pb.h"
+#include "scheduler.grpc.pb.h"
 
 using grpc::Channel;
 using grpc::ClientContext;
 using grpc::Status;
-using taskscheduler::Task;
-using taskscheduler::TaskStatus;
-using taskscheduler::TaskScheduler;
+using scheduler::HeartbeatRequest;
+using scheduler::HeartbeatResponse;
+using scheduler::TaskScheduler;
 
 class TaskSchedulerClient {
 public:
     TaskSchedulerClient(std::shared_ptr<Channel> channel)
-        : stub_(TaskScheduler::NewStub(channel)) {}
+            : stub_(TaskScheduler::NewStub(channel)) {}
 
-    std::string SubmitTask(const std::string& command, int priority) {
-        Task task;
-        task.set_command(command);
-        task.set_priority(priority);
+    std::string SendHeartbeat(const std::string& workerId, const std::string& timestamp) {
+        HeartbeatRequest request;
+        request.set_workerid(workerId);
+        request.set_timestamp(timestamp);
 
-        TaskStatus status;
+        HeartbeatResponse response;
         ClientContext context;
 
-        Status grpcStatus = stub_->SubmitTask(&context, task, &status);
+        Status grpcStatus = stub_->SendHeartbeat(&context, request, &response);
 
         if (grpcStatus.ok()) {
-            return "Task submitted successfully: ID " + std::to_string(status.taskid());
+            return "Heartbeat received successfully: " + response.message();
         } else {
-            return "Failed to submit task: " + grpcStatus.error_message();
+            return "Failed to send heartbeat: " + grpcStatus.error_message() + " | Error Code: " + std::to_string(grpcStatus.error_code());
         }
     }
 
@@ -39,7 +39,8 @@ private:
 
 int main(int argc, char** argv) {
     TaskSchedulerClient client(grpc::CreateChannel("localhost:50051", grpc::InsecureChannelCredentials()));
-    std::string response = client.SubmitTask("echo Hello, World!", 10);
+    std::string timestamp = "2024-05-10T15:00:00Z";  // Example ISO 8601 timestamp
+    std::string response = client.SendHeartbeat("12345", timestamp);  // example worker ID and timestamp
     std::cout << "Client received: " << response << std::endl;
     return 0;
 }
