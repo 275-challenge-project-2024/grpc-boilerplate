@@ -8,15 +8,22 @@ using grpc::Status;
 using scheduler::HeartbeatRequest;
 using scheduler::HeartbeatResponse;
 using scheduler::TaskScheduler;
+using scheduler::Update;
 
 class TaskSchedulerServiceImpl final : public TaskScheduler::Service {
     Status SendHeartbeat(ServerContext* context, const HeartbeatRequest* taskRequest, HeartbeatResponse* taskResponse) override {
-
-        // Use the correct accessor methods as defined in the proto file
-        std::cout << "Received task with worker ID: " << taskRequest->workerid()
+        std::cout << "Received heartbeat with worker ID: " << taskRequest->workerid()
                   << " and timestamp: " << taskRequest->timestamp() << std::endl;
 
-        taskResponse->set_message("Received");
+        // Iterate over each task update in the heartbeat
+        for (const Update& update : taskRequest->taskupdates()) {
+            std::cout << "Task Update - ID: " << update.taskid()
+                      << ", Command: " << update.command()
+                      << ", Status: " << update.completionstatus() << std::endl;
+        }
+
+        // Respond that the heartbeat was received successfully
+        taskResponse->set_message("Heartbeat received successfully");
         return Status::OK;
     }
 };
@@ -28,7 +35,7 @@ void RunServer() {
     ServerBuilder builder;
     // Add listening port and register services
     builder.AddListeningPort(server_address, grpc::InsecureServerCredentials());
-    builder.RegisterService(&service);  // No need for reinterpret_cast
+    builder.RegisterService(&service);  // Directly register the service
     std::unique_ptr<Server> server(builder.BuildAndStart());
 
     std::cout << "Server listening on " << server_address << std::endl;

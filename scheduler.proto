@@ -35,6 +35,7 @@ message Update {
 message TaskRequest {
     string clientId = 1;
     string taskId = 2;
+    string command = 3;
 }
 
 message TaskResponse {
